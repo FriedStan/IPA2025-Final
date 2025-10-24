@@ -1,8 +1,8 @@
 Building configuration...
 
-Current configuration : 4649 bytes
+Current configuration : 4640 bytes
 !
-! Last configuration change at 00:55:49 UTC Sat Oct 25 2025 by admin
+! Last configuration change at 01:23:30 UTC Sat Oct 25 2025 by admin
 !
 version 16.9
 service timestamps debug datetime msec
@@ -200,7 +200,7 @@ control-plane
 !
 !
 banner motd ^C
-gurt:yo by 66070030
+ntp.taikie
 ^C
 !
 line con 0
