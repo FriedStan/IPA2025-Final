@@ -76,32 +76,63 @@ while True:
     message = messages[0]["text"]
     print("Received message: " + message)
 
+    # default function will use restconf cause it's easier
+    restconf_selected = True
+    netconf_selected = False
+
     # check if the text of the message starts with the magic character "/" followed by your studentID and a space and followed by a command name
     #  e.g.  "/66070123 create"
     if message.startswith("/66070030 "):
 
         # extract the command
-        command = message[len("/66070030 "):]
-        print(command)
+        full_command = message[len("/66070030 "):]
+        parts = full_command.split()
+        
+        if len(parts) == 2 and all(part.isdigit() for part in parts[0].split('.')):
+            ip_address = parts[0]
+            command = parts[1]
+            print(f"Extracted IP: {ip_address}")
+            print(f"Command: {command}")
+        else:
+            if all(part.isdigit() for part in full_command.split('.')):
+                ip_address = full_command
+                command = None
+                print(f"Extracted IP: {ip_address}")
+                print("No command provided.")
+            else:
+                command = full_command
+                ip_address = None
+                print(f"Command only: {command}")
 
 # 5. Complete the logic for each command
-
-        if command == "create":
-            responseMessage = restconf_final.create()
-        elif command == "delete":
-            responseMessage = restconf_final.delete()
-        elif command == "enable":
-            responseMessage = restconf_final.enable()
-        elif command == "disable":
-            responseMessage = restconf_final.disable()
-        elif command == "status":
-            responseMessage = restconf_final.status()
-        elif command == "gigabit_status":
-            responseMessage = netmiko_final.gigabit_status()
-        elif command == "showrun":
-            responseMessage = ansible_final.showrun()
+        if ip_address:
+            # If an IP address was extracted, you can pass it to the functions if needed
+            if command == "create":
+                responseMessage = restconf_final.create(ip_address)
+            elif command == "delete":
+                responseMessage = restconf_final.delete(ip_address)
+            elif command == "enable":
+                responseMessage = restconf_final.enable(ip_address)
+            elif command == "disable":
+                responseMessage = restconf_final.disable(ip_address)
+            elif command == "status":
+                responseMessage = restconf_final.status(ip_address)
+            elif command == "gigabit_status":
+                responseMessage = netmiko_final.gigabit_status(ip_address)
+            elif command == "showrun":
+                responseMessage = ansible_final.showrun(ip_address)
+            else:
+                responseMessage = "Error: No command or unknown command"
+        elif command == "restconf":
+            responseMessage = "Ok: Restconf"
+            restconf_selected = True
+            netconf_selected = False
+        elif command == "netconf":
+            responseMessage = "Ok: Netconf"
+            restconf_selected = False
+            netconf_selected = True
         else:
-            responseMessage = "Error: No command or unknown command"
+            responseMessage = "Error: No IP specified"
         
 # 6. Complete the code to post the message to the Webex Teams room.
 
