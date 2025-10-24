@@ -80,6 +80,10 @@ def enable(ip_address):
     if not check_interface_exists(ip_address, "Loopback66070030"):
         print("Interface does not exist")
         return "Cannot enable: Interface loopback 66070030"
+    
+    if is_interface_enabled(ip_address, "Loopback66070030"):
+        print("Interface is already enabled")
+        return "Interface loopback 66070030 is already enabled (checked by Restconf)"
 
     yangConfig = {
         "ietf-interfaces:interface": {
@@ -107,6 +111,10 @@ def disable(ip_address):
     if not check_interface_exists(ip_address, "Loopback66070030"):
         print("Interface does not exist")
         return "Cannot shutdown: Interface loopback 66070030"
+    
+    if not is_interface_enabled(ip_address, "Loopback66070030"):
+        print("Interface is already disabled")
+        return "Interface loopback 66070030 is already disabled (checked by Restconf)"
     
     yangConfig = {
         "ietf-interfaces:interface": {
@@ -178,3 +186,22 @@ def check_interface_exists(ip_address, interface_name):
     else:
         print("Interface not found. Status Code: {}".format(resp.status_code))
         return False
+
+
+def is_interface_enabled(ip_address, interface_name):
+    """Check if specified interface is enabled"""
+    api_url_status = api_url(ip_address) + f"ietf-interfaces:interfaces-state/interface={interface_name}"
+
+    resp = requests.get(
+        api_url_status,
+        auth=basicauth,
+        headers=headers,
+        verify=False
+    )
+
+    if 200 <= resp.status_code <= 299:
+        response_json = resp.json()
+        admin_status = response_json["ietf-interfaces:interface"]["admin-status"]
+        oper_status = response_json["ietf-interfaces:interface"]["oper-status"]
+        return admin_status == 'up' and oper_status == 'up'
+    return False
