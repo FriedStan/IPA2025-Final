@@ -38,7 +38,7 @@ roomIdToGetMessages = (
 ansible_ip_address = {"10.0.15.61":"R1", "10.0.15.62":"R2", "10.0.15.63":"R3", "10.0.15.64":"R4", "10.0.15.65":"R5"}
 
 # command list that doesn't need restconf or netconf
-ansible_command_list = ["showrun", "gigabit_status"]
+ansible_command_list = ["showrun", "gigabit_status", "motd"]
 
 # set default command list
 command_list = ["create", "delete", "enable", "disable", "status"]
@@ -97,23 +97,29 @@ while True:
 
         # extract the command
         full_command = message[len("/66070030 "):]
-        parts = full_command.split()
+        parts = full_command.split(maxsplit=2)
         
-        if len(parts) == 2 and all(part.isdigit() for part in parts[0].split('.')):
+        # Check if first part is an IP address
+        if parts and all(part.isdigit() for part in parts[0].split('.')):
             ip_address = parts[0]
-            command = parts[1]
-            print(f"Extracted IP: {ip_address}")
-            print(f"Command: {command}")
-        else:
-            if all(part.isdigit() for part in full_command.split('.')):
-                ip_address = full_command
-                command = None
-                print(f"Extracted IP: {ip_address}")
-                print("No command provided.")
+            if len(parts) >= 2:
+                command = parts[1]
+                # If there's a third part (for MOTD), keep it
+                motd_text = parts[2] if len(parts) == 3 else None
             else:
-                command = full_command
-                ip_address = None
-                print(f"Command only: {command}")
+                command = None
+                motd_text = None
+            print(f"Extracted IP: {ip_address}")
+            if command:
+                print(f"Command: {command}")
+                if motd_text:
+                    print(f"MOTD text: {motd_text}")
+        else:
+            # If first part is not an IP, treat it as a command
+            command = parts[0] if parts else None
+            ip_address = None
+            motd_text = None
+            print(f"Command only: {command}")
 
 # 5. Complete the logic for each command
         if command == "restconf":
@@ -156,10 +162,19 @@ while True:
                     responseMessage = netconf_final.disable(ip_address)
                 elif command == "status":
                     responseMessage = netconf_final.status(ip_address)
-            elif command == "gigabit_status" and ip_address in ansible_ip_address:
+            elif ip_address not in ansible_ip_address:
+                responseMessage = "Error: IP address not found in hardcoded list lmao"
+            elif command == "gigabit_status":
                 responseMessage = netmiko_final.gigabit_status(ip_address)
             elif command == "showrun":
                 responseMessage = ansible_final.showrun(ip_address)
+            elif command == "motd":
+                # For MOTD, check if there's a custom message after the command
+                motd_parts = full_command.split(maxsplit=2)
+                if motd_text:
+                    responseMessage = ansible_final.motd(ip_address, motd_text)
+                else:
+                    responseMessage = netmiko_final.get_motd(ip_address)
             else:
                 responseMessage = "Error: No command or unknown command"
         else:
