@@ -16,6 +16,10 @@ def api_url(ip_address):
 
 
 def create(ip_address):
+    if check_interface_exists(ip_address, "Loopback66070030"):
+        print("Interface already exists")
+        return "Cannot create: Interface loopback 66070030"
+    
     # Create a loopback interface named Loopback66070030
     yangConfig = {
         "ietf-interfaces:interface": [
@@ -53,6 +57,10 @@ def create(ip_address):
 
 
 def delete(ip_address):
+    if not check_interface_exists(ip_address, "Loopback66070030"):
+        print("Interface does not exist")
+        return "Cannot delete: Interface loopback 66070030"
+    
     resp = requests.delete(
         api_url(ip_address) + "ietf-interfaces:interfaces/interface=Loopback66070030",
         auth=basicauth,
@@ -69,6 +77,10 @@ def delete(ip_address):
 
 
 def enable(ip_address):
+    if not check_interface_exists(ip_address, "Loopback66070030"):
+        print("Interface does not exist")
+        return "Cannot enable: Interface loopback 66070030"
+
     yangConfig = {
         "ietf-interfaces:interface": {
             "enabled": True
@@ -92,6 +104,10 @@ def enable(ip_address):
 
 
 def disable(ip_address):
+    if not check_interface_exists(ip_address, "Loopback66070030"):
+        print("Interface does not exist")
+        return "Cannot shutdown: Interface loopback 66070030"
+    
     yangConfig = {
         "ietf-interfaces:interface": {
             "enabled": False
@@ -115,6 +131,10 @@ def disable(ip_address):
 
 
 def status(ip_address):
+    if not check_interface_exists(ip_address, "Loopback66070030"):
+        print("Interface does not exist")
+        return "No Interface loopback 66070030 (checked by Restconf)"
+    
     api_url_status = api_url(ip_address) + "ietf-interfaces:interfaces-state/interface=Loopback66070030"
 
     resp = requests.get(
@@ -139,3 +159,22 @@ def status(ip_address):
         return "No Interface loopback 66070030 (checked by Restconf)"
     else:
         print('Error. Status Code: {}'.format(resp.status_code))
+
+
+def check_interface_exists(ip_address, interface_name):
+    """Check if specified interface exists"""
+    api_url_check = api_url(ip_address) + f"ietf-interfaces:interfaces-state/interface={interface_name}"
+
+    resp = requests.get(
+        api_url_check,
+        auth=basicauth,
+        headers=headers,
+        verify=False
+    )
+
+    if 200 <= resp.status_code <= 299:
+        print("Interface found. Status Code: {}".format(resp.status_code))
+        return True
+    else:
+        print("Interface not found. Status Code: {}".format(resp.status_code))
+        return False

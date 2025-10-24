@@ -12,6 +12,11 @@ def connect(ip_address):
 
 def create(ip_address):
     m = connect(ip_address)
+
+    if check_interface_exists("Loopback66070030", m):
+        print("Interface already exists")
+        return "Cannot create: Interface loopback 66070030"
+    
     netconf_config = """
     <config>
         <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
@@ -41,6 +46,11 @@ def create(ip_address):
 
 def delete(ip_address):
     m = connect(ip_address)
+
+    if not check_interface_exists("Loopback66070030", m):
+        print("Interface does not exist")
+        return "Cannot delete: Interface loopback 66070030"
+
     netconf_config = """
     <config>
         <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
@@ -61,6 +71,11 @@ def delete(ip_address):
 
 def enable(ip_address):
     m = connect(ip_address)
+
+    if not check_interface_exists("Loopback66070030", m):
+        print("Interface does not exist")
+        return "Cannot enable: Interface loopback 66070030"
+
     netconf_config = """
     <config>
         <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
@@ -70,7 +85,6 @@ def enable(ip_address):
             </interface>
         </interfaces>
     </config>"""
-
     try:
         netconf_reply = m.edit_config(target="running", config=netconf_config)
         xml_data = netconf_reply.xml
@@ -82,6 +96,11 @@ def enable(ip_address):
 
 def disable(ip_address):
     m = connect(ip_address)
+
+    if not check_interface_exists("Loopback66070030", m):
+        print("Interface does not exist")
+        return "Cannot shutdown: Interface loopback 66070030"
+
     netconf_config = """
     <config>
         <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
@@ -103,6 +122,11 @@ def disable(ip_address):
 
 def status(ip_address):
     m = connect(ip_address)
+
+    if not check_interface_exists("Loopback66070030", m):
+        print("Interface does not exist")
+        return "No Interface loopback 66070030 (checked by Netconf)"
+
     netconf_filter = """
     <filter>
         <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
@@ -133,3 +157,24 @@ def status(ip_address):
         return "No Interface loopback 66070030 (checked by Netconf)"
     except Exception as e:
         print(f"Error: {str(e)}")
+
+def check_interface_exists(interface_name, m):
+    netconf_filter = f"""
+    <filter>
+        <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+            <interface>
+                <name>{interface_name}</name>
+            </interface>
+        </interfaces-state>
+    </filter>"""
+
+    try:
+        netconf_reply = m.get(filter=netconf_filter)
+        netconf_reply_dict = xmltodict.parse(netconf_reply.xml)
+        
+        return ('data' in netconf_reply_dict['rpc-reply'] and 
+                netconf_reply_dict['rpc-reply']['data'] is not None and
+                'interfaces-state' in netconf_reply_dict['rpc-reply']['data'])
+    except Exception as e:
+        print(f"Error checking interface: {str(e)}")
+        return False
