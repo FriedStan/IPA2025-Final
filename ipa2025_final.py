@@ -138,7 +138,9 @@ while True:
             responseMessage = "Error: No method specified"
             print("Error: No method specified")
         elif ip_address:
-            if restconf_selected == True and command in command_list:
+            if ip_address not in ansible_ip_address:
+                responseMessage = "Error: IP address not found in hardcoded list lmao"
+            elif restconf_selected == True and command in command_list:
                 # use restconf_final.py for the commands 
                 if command == "create":
                     responseMessage = restconf_final.create(ip_address)
@@ -162,8 +164,6 @@ while True:
                     responseMessage = netconf_final.disable(ip_address)
                 elif command == "status":
                     responseMessage = netconf_final.status(ip_address)
-            elif ip_address not in ansible_ip_address:
-                responseMessage = "Error: IP address not found in hardcoded list lmao"
             elif command == "gigabit_status":
                 responseMessage = netmiko_final.gigabit_status(ip_address)
             elif command == "showrun":
