@@ -34,6 +34,12 @@ roomIdToGetMessages = (
     ROOM_ID
 )
 
+# hardcode ansible ip address
+ansible_ip_address = {"10.0.15.61":"R1", "10.0.15.62":"R2", "10.0.15.63":"R3", "10.0.15.64":"R4", "10.0.15.65":"R5"}
+
+# command list that doesn't need restconf or netconf
+ansible_command_list = ["showrun", "gigabit_status"]
+
 # set default command list
 command_list = ["create", "delete", "enable", "disable", "status"]
 
@@ -120,7 +126,9 @@ while True:
             print("Now using Netconf")
             restconf_selected = False
             netconf_selected = True
-        elif (restconf_selected == False and netconf_selected == False) or (restconf_selected == True and netconf_selected == True):
+        elif ((restconf_selected == False and netconf_selected == False) or \
+            (restconf_selected == True and netconf_selected == True)) and \
+                command not in ansible_command_list:
             responseMessage = "Error: No method specified"
             print("Error: No method specified")
         elif ip_address:
@@ -148,7 +156,7 @@ while True:
                     responseMessage = netconf_final.disable(ip_address)
                 elif command == "status":
                     responseMessage = netconf_final.status(ip_address)
-            elif command == "gigabit_status":
+            elif command == "gigabit_status" and ip_address in ansible_ip_address:
                 responseMessage = netmiko_final.gigabit_status(ip_address)
             elif command == "showrun":
                 responseMessage = ansible_final.showrun(ip_address)
@@ -172,7 +180,7 @@ while True:
         # https://developer.webex.com/docs/basics for more detail
 
         if command == "showrun" and responseMessage == 'ok':
-            filename = "show_run_66070030_R4.txt"
+            filename = f"show_run_66070030_{ansible_ip_address[ip_address]}.txt"
             fileobject = open(filename, "rb")
             filetype = "text/plain"
             # build multipart/form-data payload including the file

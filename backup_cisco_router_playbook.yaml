@@ -3,6 +3,8 @@
   hosts: cisco_routers
   gather_facts: false
   connection: network_cli
+  vars:
+    ansible_network_os: cisco.ios.ios
 
   tasks:
     - name: DISPLAYING THE RUNNING CONFIG
@@ -14,4 +16,4 @@
     - name: SAVE OUTPUT TO FILE
       copy:
         content: "{{ config.stdout[0] }}"
-        dest: "show_run_66070030_R4.txt"
+        dest: "show_run_66070030_{{ inventory_hostname }}.txt"

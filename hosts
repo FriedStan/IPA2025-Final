@@ -1,2 +1,6 @@
 [cisco_routers]
-R4 ansible_host=10.0.15.64 ansible_user=admin ansible_password=cisco ansible_network_os=cisco.ios.ios ansible_ssh_common_args='-oKexAlgorithms=+diffie-hellman-group14-sha1 -oHostKeyAlgorithms=+ssh-rsa'
+R1 ansible_host=10.0.15.61 ansible_user=admin ansible_password=cisco
+R2 ansible_host=10.0.15.62 ansible_user=admin ansible_password=cisco
+R3 ansible_host=10.0.15.63 ansible_user=admin ansible_password=cisco
+R4 ansible_host=10.0.15.64 ansible_user=admin ansible_password=cisco
+R5 ansible_host=10.0.15.65 ansible_user=admin ansible_password=cisco
