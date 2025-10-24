@@ -14,6 +14,7 @@ import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 import restconf_final
+import netconf_final
 import netmiko_final
 import ansible_final
 
@@ -32,6 +33,10 @@ ROOM_ID = os.environ.get("ROOM_ID")
 roomIdToGetMessages = (
     ROOM_ID
 )
+
+# default function will not use restconf or netconf until specified
+restconf_selected = False
+netconf_selected = False
 
 while True:
     # always add 1 second of delay to the loop to not go over a rate limit of API calls
@@ -76,9 +81,6 @@ while True:
     message = messages[0]["text"]
     print("Received message: " + message)
 
-    # default function will use restconf cause it's easier
-    restconf_selected = True
-    netconf_selected = False
 
     # check if the text of the message starts with the magic character "/" followed by your studentID and a space and followed by a command name
     #  e.g.  "/66070123 create"
@@ -105,8 +107,21 @@ while True:
                 print(f"Command only: {command}")
 
 # 5. Complete the logic for each command
-        if ip_address:
-            # If an IP address was extracted, you can pass it to the functions if needed
+        if command == "restconf":
+            responseMessage = "Ok: Restconf"
+            print("Now using Restconf")
+            restconf_selected = True
+            netconf_selected = False
+        elif command == "netconf":
+            responseMessage = "Ok: Netconf"
+            print("Now using Netconf")
+            restconf_selected = False
+            netconf_selected = True
+        elif (restconf_selected == False and netconf_selected == False) or (restconf_selected == True and netconf_selected == True):
+            responseMessage = "Error: No method specified"
+            print("Error: No method specified")
+        elif restconf_selected == True and ip_address:
+            # use restconf_final.py for the commands 
             if command == "create":
                 responseMessage = restconf_final.create(ip_address)
             elif command == "delete":
@@ -123,14 +138,24 @@ while True:
                 responseMessage = ansible_final.showrun(ip_address)
             else:
                 responseMessage = "Error: No command or unknown command"
-        elif command == "restconf":
-            responseMessage = "Ok: Restconf"
-            restconf_selected = True
-            netconf_selected = False
-        elif command == "netconf":
-            responseMessage = "Ok: Netconf"
-            restconf_selected = False
-            netconf_selected = True
+        elif netconf_selected == True and ip_address:
+            # use netconf_final.py for the commands
+            if command == "create":
+                responseMessage = netconf_final.create(ip_address)
+            elif command == "delete":
+                responseMessage = netconf_final.delete(ip_address)
+            elif command == "enable":
+                responseMessage = netconf_final.enable(ip_address)
+            elif command == "disable":
+                responseMessage = netconf_final.disable(ip_address)
+            elif command == "status":
+                responseMessage = netconf_final.status(ip_address)
+            elif command == "gigabit_status":
+                responseMessage = netmiko_final.gigabit_status(ip_address)
+            elif command == "showrun":
+                responseMessage = ansible_final.showrun(ip_address)
+            else:
+                responseMessage = "Error: No command or unknown command"
         else:
             responseMessage = "Error: No IP specified"
         
