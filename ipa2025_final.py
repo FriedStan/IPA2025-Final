@@ -34,6 +34,9 @@ roomIdToGetMessages = (
     ROOM_ID
 )
 
+# set default command list
+command_list = ["create", "delete", "enable", "disable", "status"]
+
 # default function will not use restconf or netconf until specified
 restconf_selected = False
 netconf_selected = False
@@ -121,7 +124,7 @@ while True:
             responseMessage = "Error: No method specified"
             print("Error: No method specified")
         elif ip_address:
-            if restconf_selected == True:
+            if restconf_selected == True and command in command_list:
                 # use restconf_final.py for the commands 
                 if command == "create":
                     responseMessage = restconf_final.create(ip_address)
@@ -133,7 +136,7 @@ while True:
                     responseMessage = restconf_final.disable(ip_address)
                 elif command == "status":
                     responseMessage = restconf_final.status(ip_address)
-            elif netconf_selected == True:
+            elif netconf_selected == True and command in command_list:
                 # use netconf_final.py for the commands
                 if command == "create":
                     responseMessage = netconf_final.create(ip_address)
