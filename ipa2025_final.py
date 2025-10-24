@@ -120,36 +120,31 @@ while True:
         elif (restconf_selected == False and netconf_selected == False) or (restconf_selected == True and netconf_selected == True):
             responseMessage = "Error: No method specified"
             print("Error: No method specified")
-        elif restconf_selected == True and ip_address:
-            # use restconf_final.py for the commands 
-            if command == "create":
-                responseMessage = restconf_final.create(ip_address)
-            elif command == "delete":
-                responseMessage = restconf_final.delete(ip_address)
-            elif command == "enable":
-                responseMessage = restconf_final.enable(ip_address)
-            elif command == "disable":
-                responseMessage = restconf_final.disable(ip_address)
-            elif command == "status":
-                responseMessage = restconf_final.status(ip_address)
-            elif command == "gigabit_status":
-                responseMessage = netmiko_final.gigabit_status(ip_address)
-            elif command == "showrun":
-                responseMessage = ansible_final.showrun(ip_address)
-            else:
-                responseMessage = "Error: No command or unknown command"
-        elif netconf_selected == True and ip_address:
-            # use netconf_final.py for the commands
-            if command == "create":
-                responseMessage = netconf_final.create(ip_address)
-            elif command == "delete":
-                responseMessage = netconf_final.delete(ip_address)
-            elif command == "enable":
-                responseMessage = netconf_final.enable(ip_address)
-            elif command == "disable":
-                responseMessage = netconf_final.disable(ip_address)
-            elif command == "status":
-                responseMessage = netconf_final.status(ip_address)
+        elif ip_address:
+            if restconf_selected == True:
+                # use restconf_final.py for the commands 
+                if command == "create":
+                    responseMessage = restconf_final.create(ip_address)
+                elif command == "delete":
+                    responseMessage = restconf_final.delete(ip_address)
+                elif command == "enable":
+                    responseMessage = restconf_final.enable(ip_address)
+                elif command == "disable":
+                    responseMessage = restconf_final.disable(ip_address)
+                elif command == "status":
+                    responseMessage = restconf_final.status(ip_address)
+            elif netconf_selected == True:
+                # use netconf_final.py for the commands
+                if command == "create":
+                    responseMessage = netconf_final.create(ip_address)
+                elif command == "delete":
+                    responseMessage = netconf_final.delete(ip_address)
+                elif command == "enable":
+                    responseMessage = netconf_final.enable(ip_address)
+                elif command == "disable":
+                    responseMessage = netconf_final.disable(ip_address)
+                elif command == "status":
+                    responseMessage = netconf_final.status(ip_address)
             elif command == "gigabit_status":
                 responseMessage = netmiko_final.gigabit_status(ip_address)
             elif command == "showrun":
