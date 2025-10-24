@@ -1,0 +1,17 @@
+---
+- name: AUTOMATIC BACKUP OF RUNNING-CONFIG
+  hosts: cisco_routers
+  gather_facts: false
+  connection: network_cli
+
+  tasks:
+    - name: DISPLAYING THE RUNNING CONFIG
+      ios_command:
+        commands:
+          - show running-config
+      register: config
+
+    - name: SAVE OUTPUT TO FILE
+      copy:
+        content: "{{ config.stdout[0] }}"
+        dest: "show_run_66070030_R4.txt"
